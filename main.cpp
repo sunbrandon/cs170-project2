@@ -149,8 +149,9 @@ double leaveOneOutAccuracy(const vector<int>& featureMask, const vector<vector<d
         }
         
         int nearestLabel = labels[indices[0]];
-        if (nearestLabel == labels[i])
+        if (nearestLabel == labels[i]) {
             correctCount++;
+        }
     }
     return 100.0 * correctCount / numInstances;     // return the accuracy percentage
 }
