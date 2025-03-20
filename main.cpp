@@ -30,7 +30,7 @@ bool loadData(const string &filename, vector<int>& labels, vector<vector<double>
     //     dataArray.push_back(row);
     // }
 
-    while (getline(fin, line)) {
+    while (getline(fin, line)) {         // read file line by line
         if (line.empty()) {     // skip empty lines
             continue;
         }
@@ -62,14 +62,14 @@ bool loadData(const string &filename, vector<int>& labels, vector<vector<double>
 
 double euclideanDistance(int i, int j, const vector<int>& featureMask, const vector<vector<double> >& dataArray, int numFeatures) {
     double sum = 0.0;
-    for (int f = 0; f < numFeatures; f++) {
+    for (int f = 0; f < numFeatures; f++) {      // l   oop over each feature
         if (featureMask[f] == 1) {
             // sum += abs(dataArray[i][f] - dataArray[j][f]);
 
             double diff = dataArray[i][f] - dataArray[j][f];        // compute difference between instances i and j
 
             // sum += pow(diff, 2);
-            sum += diff * diff;
+            sum += diff * diff;     // square the difference and add to sum
         }
     }
     return sqrt(sum);       // return the square root of the sum (Euclidean distance)
@@ -111,7 +111,6 @@ double leaveOneOutAccuracy(const vector<int>& featureMask, const vector<vector<d
         // }
 
         // quicksort to sort 'indices' by distance from instance i
-
         vector<int> stack;
         stack.push_back(0);                     
         stack.push_back(indices.size() - 1);
@@ -152,7 +151,7 @@ double leaveOneOutAccuracy(const vector<int>& featureMask, const vector<vector<d
         if (nearestLabel == labels[i])
             correctCount++;
     }
-    return 100.0 * correctCount / numInstances;
+    return 100.0 * correctCount / numInstances;     // return the accuracy percentage
 }
 
 
@@ -171,7 +170,7 @@ double defaultRate(const vector<int>& labels) {
     if (labels.empty()) {
         return 0.0;
     }
-    vector<int> sortedLabels = labels;
+    vector<int> sortedLabels = labels;       // copy labels to sort
 
     // int sum = 0;
     // for (int i = 0; i < labels.size(); i++) {
@@ -179,6 +178,7 @@ double defaultRate(const vector<int>& labels) {
     // }
     // int mode = sum / labels.size();
     
+    // quicksort to sort the labels
     vector<int> stack;
     stack.push_back(0);
     stack.push_back(sortedLabels.size() - 1);
@@ -235,7 +235,7 @@ double defaultRate(const vector<int>& labels) {
 
 void forwardSelection(const vector<vector<double> >& dataArray, const vector<int>& labels, int numInstances, int numFeatures) {
     vector<int> currentMask(numFeatures, 0);
-    vector<int> bestOverallMask(numFeatures, 0);
+    vector<int> bestOverallMask(numFeatures, 0);    // vector to store the best overall feature set found
     double bestOverallAccuracy = 0.0;
 
     // bestOverallAccuracy = leaveOneOutAccuracy(currentMask, dataArray, labels, numInstances, numFeatures);
@@ -244,19 +244,19 @@ void forwardSelection(const vector<vector<double> >& dataArray, const vector<int
     cout << "Empty set (default rate) is " << fixed << setprecision(1) << defRate << "%" << endl << endl;
     
     cout << "Beginning search." << endl << endl;
-    for (int level = 0; level < numFeatures; level++) {
+    for (int level = 0; level < numFeatures; level++) {     // loop through for each level (number of features to add)
         int featureToAdd = -1;
         double bestAccuracyThisLevel = 0.0;
         vector<int> bestMaskThisLevel = currentMask;
         for (int f = 0; f < numFeatures; f++) {
-            if (currentMask[f] == 0) {
+            if (currentMask[f] == 0) {      // if feature f not selected
                 vector<int> tempMask = currentMask;
-                tempMask[f] = 1;
+                tempMask[f] = 1;        // temp add feature f
                 double accuracy = leaveOneOutAccuracy(tempMask, dataArray, labels, numInstances, numFeatures);
                 cout << "   Using feature(s) ";
                 printFeatureSet(tempMask, numFeatures);
                 cout << " accuracy is " << fixed << setprecision(1) << accuracy << "%" << endl;
-                if (accuracy > bestAccuracyThisLevel) {
+                if (accuracy > bestAccuracyThisLevel) {     // update best accuracy for this level
                     bestAccuracyThisLevel = accuracy;
                     featureToAdd = f;
                     bestMaskThisLevel = tempMask;
@@ -271,7 +271,7 @@ void forwardSelection(const vector<vector<double> >& dataArray, const vector<int
             if (bestAccuracyThisLevel < bestOverallAccuracy) {
                 cout << endl << "(WARNING, Accuracy has decreased! Continuing search in case of local maxima)" << endl;
             }
-            if (bestAccuracyThisLevel > bestOverallAccuracy) {
+            if (bestAccuracyThisLevel > bestOverallAccuracy) {      // update overall best if improved
                 bestOverallAccuracy = bestAccuracyThisLevel;
                 bestOverallMask = currentMask;
             }
@@ -292,14 +292,14 @@ void backwardElimination(const vector<vector<double> >& dataArray, const vector<
     printFeatureSet(currentMask, numFeatures);
     cout << " accuracy is " << fixed << setprecision(1) << bestOverallAccuracy << "%" << endl << endl;
     
-    for (int level = 0; level < numFeatures - 1; level++) {
+    for (int level = 0; level < numFeatures - 1; level++) {     // iteratively remove one feature at a time
         int featureToRemove = -1;
         double bestAccuracyThisLevel = 0.0;
         vector<int> bestMaskThisLevel = currentMask;
         for (int f = 0; f < numFeatures; f++) {
-            if (currentMask[f] == 1) {  // feature is currently selected
+            if (currentMask[f] == 1) {      // feature is currently selected
                 vector<int> tempMask = currentMask;
-                tempMask[f] = 0;
+                tempMask[f] = 0;        // remove feature f temporarily
                 double accuracy = leaveOneOutAccuracy(tempMask, dataArray, labels, numInstances, numFeatures);
                 cout << "   Removing feature " << (f + 1) << " from ";
                 printFeatureSet(currentMask, numFeatures);
@@ -311,8 +311,8 @@ void backwardElimination(const vector<vector<double> >& dataArray, const vector<
                 }
             }
         }
-        if (featureToRemove != -1) {
-            currentMask[featureToRemove] = 0;
+        if (featureToRemove != -1) {        // if removing a feature improves accuracy
+            currentMask[featureToRemove] = 0;       // remove
             cout << endl << "Feature set ";
             printFeatureSet(currentMask, numFeatures);
             cout << " was best, accuracy is " << fixed << setprecision(1) << bestAccuracyThisLevel << "%" << endl;
@@ -336,7 +336,7 @@ void backwardElimination(const vector<vector<double> >& dataArray, const vector<
 }
 
 int main() {
-    auto start = chrono::steady_clock::now();
+    auto start = chrono::steady_clock::now();       // record start time
     
     cout << "Welcome to Brandon Sun's Feature Selection Algorithm." << endl << endl;
     cout << "Type in the name of the file to test: ";
@@ -352,7 +352,7 @@ int main() {
     cout << endl;
     
     vector<int> labels;
-    vector<vector<double> > dataArray;
+    vector<vector<double> > dataArray;      // 2D vector to hold features
     int numInstances = 0;
     int numFeatures = 0;
     
@@ -376,8 +376,8 @@ int main() {
         cout << "Invalid choice. Please run again and select 1 or 2." << endl;
     }
     
-    auto end = chrono::steady_clock::now();
-    chrono::duration<double> elapsed_seconds = end - start;
+    auto end = chrono::steady_clock::now();     // record end time
+    chrono::duration<double> elapsed_seconds = end - start;     // compute elapsed time
     cout << "Time taken: " << elapsed_seconds.count() << " seconds" << endl;
     
     return 0;
