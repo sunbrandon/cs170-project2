@@ -80,8 +80,9 @@ double leaveOneOutAccuracy(const vector<int>& featureMask, const vector<vector<d
     for (int i = 0; i < numInstances; i++) {
         vector<int> indices;
         for (int j = 0; j < numInstances; j++) {
-            if (j != i)
+            if (j != i) {
                 indices.push_back(j);
+            }
         }
 
         // double bestDistance = 1e9;
@@ -187,8 +188,9 @@ double defaultRate(const vector<int>& labels) {
         int right = stack.back(); stack.pop_back();
         int left = stack.back(); stack.pop_back();
         
-        if (left >= right)
+        if (left >= right) {
             continue;
+        }
         
         int pivot = sortedLabels[right];
         int i = left - 1;
@@ -218,16 +220,19 @@ double defaultRate(const vector<int>& labels) {
     int maxCount = 1;
     int currentCount = 1;
     for (size_t i = 1; i < sortedLabels.size(); i++) {
-        if (sortedLabels[i] == sortedLabels[i - 1])
+        if (sortedLabels[i] == sortedLabels[i - 1]) {
             currentCount++;
+        }
         else {
-            if (currentCount > maxCount)
+            if (currentCount > maxCount) {
                 maxCount = currentCount;
+            }
             currentCount = 1;
         }
     }
-    if (currentCount > maxCount)
+    if (currentCount > maxCount) {
         maxCount = currentCount;
+    }
     
     return 100.0 * maxCount / sortedLabels.size();      // return default rate (empty set) as percentage
 }
